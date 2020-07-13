@@ -89,12 +89,12 @@ object uMainForm: TuMainForm
     Top = 296
     object MenuButton_File: TMenuItem
       Caption = #25991#20214
-      object MenuButton_New: TMenuItem
-        Caption = #26032#24314
+      object MenuButton_NewDB: TMenuItem
+        Caption = #26032#24314#25968#25454#24211
       end
-      object MenuButton_Open: TMenuItem
-        Caption = #25171#24320
-        OnClick = MenuButton_OpenClick
+      object MenuButton_OpenDB: TMenuItem
+        Caption = #25171#24320#25968#25454#24211
+        OnClick = MenuButton_OpenDBClick
       end
     end
   end

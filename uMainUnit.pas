@@ -27,12 +27,12 @@ type
     OpenDialog_File: TOpenDialog;
     MainMenu_1: TMainMenu;
     MenuButton_File: TMenuItem;
-    MenuButton_New: TMenuItem;
-    MenuButton_Open: TMenuItem;
+    MenuButton_NewDB: TMenuItem;
+    MenuButton_OpenDB: TMenuItem;
     ToolBar_1: TToolBar;
     ToolButton_New: TToolButton;
     ImageList_1: TImageList;
-    procedure MenuButton_OpenClick(Sender: TObject);
+    procedure MenuButton_OpenDBClick(Sender: TObject);
     procedure ToolButton_NewClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FDQuery_1AfterOpen(DataSet: TDataSet);
@@ -77,7 +77,7 @@ begin
   DBGrid_Data.DataSource := DataSource_1;
 end;
 
-procedure TuMainForm.MenuButton_OpenClick(Sender: TObject);
+procedure TuMainForm.MenuButton_OpenDBClick(Sender: TObject);
 const
   dbPath = 'data.db';
 begin
@@ -117,6 +117,7 @@ var
   filesen:TFileStream;
   filename: string;
   MD5 : string;
+  Flag : Integer;
 const
   strInsert = 'INSERT INTO Files(Name, Path, MD5, CreationTime, LastWriteTime, LastAccessTime)'+
               ' VALUES(:Name, :Path, :MD5, :CreationTime, :LastWriteTime, :LastAccessTime)';
@@ -132,18 +133,28 @@ begin
     filesen:=TFileStream.Create(OpenDialog_File.FileName,fmopenread or fmshareExclusive);
     MD5:= StreamToMD5(filesen);
     filesen.Free;
-    with FDQuery_1 do
+
+    Flag := SizeOf(FDConnection_1.ExecSQL('Select * from Files where MD5=' + MD5));
+
+    if Flag = 0 then
     begin
-      Close;
-      SQL.Clear;
-      SQL.Add(strInsert);
-      ParamByName('Name').AsString:=filename;
-      ParamByName('Path').AsString:=path;
-      ParamByName('MD5').AsString:=MD5;
-      ParamByName('CreationTime').AsDateTime:=CreationTime;
-      ParamByName('LastWriteTime').AsDateTime:=LastWriteTime;
-      ParamByName('LastAccessTime').AsDateTime:=LastAccessTime;
-      ExecSQL;
+      with FDQuery_1 do
+      begin
+        Close;
+        SQL.Clear;
+        SQL.Add(strInsert);
+        ParamByName('Name').AsString:=filename;
+        ParamByName('Path').AsString:=path;
+        ParamByName('MD5').AsString:=MD5;
+        ParamByName('CreationTime').AsDateTime:=CreationTime;
+        ParamByName('LastWriteTime').AsDateTime:=LastWriteTime;
+        ParamByName('LastAccessTime').AsDateTime:=LastAccessTime;
+        ExecSQL;
+      end;
+    end
+    else
+    begin
+      MessageBoxA(0, '文件 MD5 数据库中已存在！', '提示', MB_OKCANCEL);
     end;
   end;
   FDQuery_1.Open('Select * from Files');
