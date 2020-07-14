@@ -32,10 +32,13 @@ type
     ToolBar_1: TToolBar;
     ToolButton_New: TToolButton;
     ImageList_1: TImageList;
+    PopupMenu1: TPopupMenu;
+    MenuItem_DelRow: TMenuItem;
     procedure MenuButton_OpenDBClick(Sender: TObject);
     procedure ToolButton_NewClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FDQuery_1AfterOpen(DataSet: TDataSet);
+    procedure MenuItem_DelRowClick(Sender: TObject);
   private
     procedure GetText(Sender: TField; var Text: String; DisplayText: Boolean);
     { Private declarations }
@@ -107,6 +110,24 @@ begin
   FDQuery_1.Connection := FDConnection_1;
   DataSource_1.DataSet := FDQuery_1;
   DBGrid_Data.DataSource := DataSource_1;
+
+end;
+
+procedure TuMainForm.MenuItem_DelRowClick(Sender: TObject);
+var
+ id:  Integer;
+begin
+  id := FDQuery_1.FieldByName('ID').AsInteger;
+  if FDQuery_1.State in [dsBrowse] then
+  begin
+    FDQuery_1.Close;
+    FDQuery_1.SQL.Clear;
+    FDQuery_1.SQL.Add('delete from files where ID=' + IntToStr(id));
+    FDQuery_1.ExecSQL;
+    FDQuery_1.Close;
+    FDQuery_1.SQL.Clear;
+    FDQuery_1.Open('Select * from Files');
+  end;
 
 end;
 

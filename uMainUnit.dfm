@@ -23,6 +23,7 @@ object uMainForm: TuMainForm
     Align = alClient
     DataSource = DataSource_1
     DrawingStyle = gdsGradient
+    PopupMenu = PopupMenu1
     TabOrder = 0
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clWindowText
@@ -408,5 +409,13 @@ object uMainForm: TuMainForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000}
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 544
+    Top = 240
+    object MenuItem_DelRow: TMenuItem
+      Caption = #21024#38500
+      OnClick = MenuItem_DelRowClick
+    end
   end
 end
