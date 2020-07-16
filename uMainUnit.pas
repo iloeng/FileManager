@@ -150,14 +150,21 @@ begin
     CreationTime := FGetFileTime(path,0);
     LastWriteTime := FGetFileTime(path,1);
     LastAccessTime := FGetFileTime(path,2);
-    MD5 := '';
     filesen:=TFileStream.Create(OpenDialog_File.FileName,fmopenread or fmshareExclusive);
     MD5:= StreamToMD5(filesen);
     filesen.Free;
 
-    Flag := SizeOf(FDConnection_1.ExecSQL('Select * from Files where MD5=' + MD5));
+//    Flag := FDConnection_1.ExecSQL('Select * from Files where MD5=' + MD5).ToBoolean;
+    with FDQuery_1 do
+    begin
+      Close;
+      SQL.Clear;
+      SQL.Add('Select * from "Files" where MD5="' + MD5 + '"');
+      Open;
+    end;
 
-    if Flag = 0 then
+    { 查询结果为空，则将信息插入数据库中，不为空，弹出提示信息 }
+    if FDQuery_1.IsEmpty then      //FDQuery_1.RecordCount = 0
     begin
       with FDQuery_1 do
       begin
@@ -171,6 +178,8 @@ begin
         ParamByName('LastWriteTime').AsDateTime:=LastWriteTime;
         ParamByName('LastAccessTime').AsDateTime:=LastAccessTime;
         ExecSQL;
+        Close;
+        Open('Select * from Files');
       end;
     end
     else
