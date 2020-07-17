@@ -12,7 +12,7 @@ uses
   FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLite, FireDAC.VCLUI.Wait,
   FireDAC.Comp.UI, Vcl.Menus, System.Actions, Vcl.ActnList, Vcl.ImgList,
   Vcl.ComCtrls, Vcl.ToolWin, IdGlobalProtocols, IdHashMessageDigest,IdGlobal,IdHash,
-  FireDAC.Phys.SQLiteDef, System.ImageList;
+  FireDAC.Phys.SQLiteDef, System.ImageList, System.Hash;
 
 type
   TMD5 = class(TIdHashMessageDigest5);
@@ -50,6 +50,7 @@ var
   uMainForm: TuMainForm;
   function FGetFileTime(sFileName:string; TimeType:Integer):TDateTime;
   function StreamToMD5(s:TFileStream):string;
+  function GetFileHashMD5(FileName: String): String;
 
 implementation
 
@@ -135,7 +136,6 @@ procedure TuMainForm.ToolButton_NewClick(Sender: TObject);
 var
   path: string;
   CreationTime, LastWriteTime, LastAccessTime: TDateTime;
-  filesen:TFileStream;
   filename: string;
   MD5 : string;
   Flag : Integer;
@@ -147,19 +147,16 @@ begin
   begin
     filename := ExtractFileName(OpenDialog_File.FileName);
     path := OpenDialog_File.FileName;
-    CreationTime := FGetFileTime(path,0);
-    LastWriteTime := FGetFileTime(path,1);
-    LastAccessTime := FGetFileTime(path,2);
-    filesen:=TFileStream.Create(OpenDialog_File.FileName,fmopenread or fmshareExclusive);
-    MD5:= StreamToMD5(filesen);
-    filesen.Free;
+    CreationTime := FGetFileTime(path, 0);
+    LastWriteTime := FGetFileTime(path, 1);
+    LastAccessTime := FGetFileTime(path, 2);
+    MD5:= GetFileHashMD5(path);
 
-//    Flag := FDConnection_1.ExecSQL('Select * from Files where MD5=' + MD5).ToBoolean;
     with FDQuery_1 do
     begin
       Close;
       SQL.Clear;
-      SQL.Add('Select * from "Files" where MD5="' + MD5 + '"');
+      SQL.Add('Select * from Files where MD5="' + MD5 + '"');
       Open;
     end;
 
@@ -233,6 +230,38 @@ begin
   finally
     MD5Encode.Free;
   end;
+end;
+
+function GetFileHashMD5(FileName: String): String;
+var
+  HashMD5: THashMD5;
+  BufLen, Readed: Integer;
+  Stream: TFileStream ;
+  Buffer: Pointer;
+
+begin
+  HashMD5 := THashMD5.Create;
+  BufLen := 32 * 1024;
+  Buffer := AllocMem(BufLen);
+  try
+    Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+    try
+      while Stream.Position < Stream.Size do
+      begin
+        Readed := Stream.Read(Buffer^, BufLen);
+        if Readed > 0 then
+        begin
+          HashMD5.update(Buffer^, Readed);
+        end;
+      end;
+    finally
+      Stream.Free;
+    end;
+  finally
+    FreeMem(Buffer)
+  end;
+
+  result := HashMD5.HashAsString;
 end;
 
 end.
