@@ -1,4 +1,4 @@
-program FileManagerProject;
+program FileManager;
 
 uses
   Vcl.Forms,
