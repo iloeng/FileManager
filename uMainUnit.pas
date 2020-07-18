@@ -34,11 +34,14 @@ type
     ImageList_1: TImageList;
     PopupMenu1: TPopupMenu;
     MenuItem_DelRow: TMenuItem;
+    MenuButton_Help: TMenuItem;
+    MenuButton_About: TMenuItem;
     procedure MenuButton_OpenDBClick(Sender: TObject);
     procedure ToolButton_NewClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FDQuery_1AfterOpen(DataSet: TDataSet);
     procedure MenuItem_DelRowClick(Sender: TObject);
+    procedure MenuButton_AboutClick(Sender: TObject);
   private
     procedure GetText(Sender: TField; var Text: String; DisplayText: Boolean);
     { Private declarations }
@@ -52,7 +55,12 @@ var
   function StreamToMD5(s:TFileStream):string;
   function GetFileHashMD5(FileName: String): String;
 
+
+
 implementation
+
+uses AboutUnit;
+
 
 {$R *.dfm}
 
@@ -79,6 +87,11 @@ begin
   FDQuery_1.Connection := FDConnection_1;
   DataSource_1.DataSet := FDQuery_1;
   DBGrid_Data.DataSource := DataSource_1;
+end;
+
+procedure TuMainForm.MenuButton_AboutClick(Sender: TObject);
+begin
+  AboutUnit.AboutBox.Show;
 end;
 
 procedure TuMainForm.MenuButton_OpenDBClick(Sender: TObject);

@@ -98,6 +98,13 @@ object uMainForm: TuMainForm
         OnClick = MenuButton_OpenDBClick
       end
     end
+    object MenuButton_Help: TMenuItem
+      Caption = #24110#21161
+      object MenuButton_About: TMenuItem
+        Caption = #20851#20110
+        OnClick = MenuButton_AboutClick
+      end
+    end
   end
   object ImageList_1: TImageList
     ColorDepth = cd32Bit
