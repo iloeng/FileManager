@@ -12,7 +12,7 @@ uses
   FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLite, FireDAC.VCLUI.Wait,
   FireDAC.Comp.UI, Vcl.Menus, System.Actions, Vcl.ActnList, Vcl.ImgList,
   Vcl.ComCtrls, Vcl.ToolWin, IdGlobalProtocols, IdHashMessageDigest,IdGlobal,IdHash,
-  FireDAC.Phys.SQLiteDef, System.ImageList, System.Hash;
+  FireDAC.Phys.SQLiteDef, System.ImageList, System.Hash, System.Math;
 
 type
   TMD5 = class(TIdHashMessageDigest5);
@@ -54,8 +54,9 @@ var
   function FGetFileTime(sFileName:string; TimeType:Integer):TDateTime;
   function StreamToMD5(s:TFileStream):string;
   function GetFileHashMD5(FileName: String): String;
-
-
+  function TransBytesToSize(Bytes: Integer): String;
+  Function RoundingUserDefineDecaimalPart(FloatNum: Double; NoOfDecPart: integer): Double;
+  function TransFloatToStr(Avalue:double; ADigits:integer):string;
 
 implementation
 
@@ -75,6 +76,7 @@ procedure TuMainForm.FDQuery_1AfterOpen(DataSet: TDataSet);
 begin
   FDQuery_1.FieldByName('Name').OnGetText :=  GetText;
   FDQuery_1.FieldByName('Path').OnGetText :=  GetText;
+  FDQuery_1.FieldByName('Size').OnGetText :=  GetText;
 end;
 
 procedure TuMainForm.FormCreate(Sender: TObject);
@@ -113,6 +115,8 @@ begin
       Add('ID integer PRIMARY KEY,');
       Add('Name text,');
       Add('Path text,');
+      Add('Size text,');
+      Add('Bytes interger,');
       Add('MD5 string(32),');
       Add('CreationTime datetime,');
       Add('LastWriteTime datetime,');
@@ -151,10 +155,12 @@ var
   CreationTime, LastWriteTime, LastAccessTime: TDateTime;
   filename: string;
   MD5 : string;
-  Flag : Integer;
+  bytes: Integer;
+  size : string;
+
 const
-  strInsert = 'INSERT INTO Files(Name, Path, MD5, CreationTime, LastWriteTime, LastAccessTime)'+
-              ' VALUES(:Name, :Path, :MD5, :CreationTime, :LastWriteTime, :LastAccessTime)';
+  strInsert = 'INSERT INTO Files(Name, Path, Size, Bytes, MD5, CreationTime, LastWriteTime, LastAccessTime)'+
+              ' VALUES(:Name, :Path, :Size, :Bytes, :MD5, :CreationTime, :LastWriteTime, :LastAccessTime)';
 begin
   if OpenDialog_File.Execute then
   begin
@@ -164,6 +170,8 @@ begin
     LastWriteTime := FGetFileTime(path, 1);
     LastAccessTime := FGetFileTime(path, 2);
     MD5:= GetFileHashMD5(path);
+    bytes := FileSizeByName(path);
+    size := TransBytesToSize(bytes);
 
     with FDQuery_1 do
     begin
@@ -183,6 +191,8 @@ begin
         SQL.Add(strInsert);
         ParamByName('Name').AsString:=filename;
         ParamByName('Path').AsString:=path;
+        ParamByName('Size').AsString:=size;
+        ParamByName('Bytes').AsInteger:=bytes;
         ParamByName('MD5').AsString:=MD5;
         ParamByName('CreationTime').AsDateTime:=CreationTime;
         ParamByName('LastWriteTime').AsDateTime:=LastWriteTime;
@@ -274,7 +284,83 @@ begin
     FreeMem(Buffer)
   end;
 
-  result := HashMD5.HashAsString;
+  result := HashMD5.HashAsString.ToUpper;
+end;
+
+function TransBytesToSize(Bytes: Integer): String;
+var
+//  temp : Double;
+  temp : String;
+begin
+  if Bytes < 1024 then   { 字节 }
+  begin
+    result := IntToStr(Bytes) + ' Byte';
+  end
+
+  else if Bytes < 1024 * 1024 then  { KB }
+  begin
+//    temp :=  RoundingUserDefineDecaimalPart(Bytes / 1024, 2);
+//    result := FloatToStr(temp) + ' KB';
+    temp :=  TransFloatToStr(Bytes / 1024, 2);
+    result := temp + ' KB';
+  end
+
+  else if Bytes < 1024 * 1024 * 1024 then  { MB }
+  begin
+//    temp :=  RoundingUserDefineDecaimalPart(Bytes / (1024 * 1024),2);
+//    result := FloatToStr(temp) + ' MB';
+    temp :=  TransFloatToStr(Bytes / (1024 * 1024),2);
+    result := temp + ' MB';
+  end
+
+  else { GB }
+  begin
+//    temp :=  RoundingUserDefineDecaimalPart(Bytes / (1024 * 1024 * 1024), 2);
+//    result := FloatToStr(temp) + ' GB';
+    temp :=  TransFloatToStr(Bytes / (1024 * 1024 * 1024), 2);
+    result := temp + ' GB';
+  end
+end;
+
+//FormatFloat('#.##', f)
+
+Function RoundingUserDefineDecaimalPart(FloatNum: Double; NoOfDecPart: integer): Double;
+{ 同下，不进行四舍五入 }
+Var
+    ls_FloatNumber: String;
+Begin
+    ls_FloatNumber := FloatToStr(FloatNum);
+    IF Pos('.', ls_FloatNumber) > 0 Then
+      Result := StrToFloat(copy(ls_FloatNumber, 1, Pos('.', ls_FloatNumber) - 1) + '.' + copy
+       (ls_FloatNumber, Pos('.', ls_FloatNumber) + 1, NoOfDecPart))
+    Else
+      Result := FloatNum;
+End;
+
+
+function TransFloatToStr(Avalue : Double; ADigits : Integer) : String;
+{ 对浮点值保留 ADigits 位小数， 四舍五入 }
+var
+  v : Double;
+  p : Integer;
+  e : String;
+begin
+  if abs(Avalue)<1 then
+  begin
+    result := floatTostr(Avalue);
+    p := pos('E', result);
+    if p > 0 then
+    begin
+      e := copy(result, p, length(result));
+      setlength(result, p-1);
+      v := RoundTo(StrToFloat(result), -Adigits);
+      result := FloatToStr(v) + e;
+    end
+    else
+      result := FloatToStr(RoundTo(Avalue, -Adigits));
+  end
+  else
+    result := FloatToStr(RoundTo(Avalue, -Adigits));
 end;
 
 end.
