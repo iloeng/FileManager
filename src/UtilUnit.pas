@@ -8,7 +8,7 @@ function TransFloatToStr(Avalue : Double; ADigits : Integer) : String;
 implementation
 
 uses
-System.SysUtils, System.Math;
+System.SysUtils, System.Math, System.Classes;
 
 
 function TransBytesToSize(Bytes: Integer): String;
@@ -85,6 +85,51 @@ begin
   end
   else
     result := FloatToStr(RoundTo(Avalue, -Adigits));
+end;
+
+
+{功能:枚举指定目录及子目录下的所有文件}
+function EnumAllFiles(strPath: string; FileList: TStringList; CheckSub: Boolean = False): TStringList;
+var
+  sr: TSearchRec;
+begin
+  Result := TStringList.Create;
+  if strPath = '' then Exit;
+
+  strPath := IncludeTrailingPathDelimiter(strPath);
+
+  if not DirectoryExists(strPath) then Exit;
+
+  if FindFirst(strPath + '*.*', System.SysUtils.faAnyFile, sr) = 0 then
+  begin
+    try
+      repeat
+        //非目录的，就是文件
+        if (sr.Attr and System.SysUtils.faDirectory = 0 ) then
+        begin
+          FileList.Add(strPath + sr.Name);
+        end;
+      until FindNext(sr) <> 0;
+    finally
+      System.SysUtils.FindClose(sr);
+    end;
+  end;
+
+  //查找子目录。
+  if (FindFirst(strPath + '*', System.SysUtils.faDirectory, sr) = 0) and CheckSub  then
+  begin
+    try
+      repeat
+        if (sr.Attr and System.SysUtils.faDirectory<>0) and (sr.Name<>'.') and (sr.Name<>'..') then
+        begin
+          EnumAllFiles(strPath + sr.Name, FileList, CheckSub);
+        end;
+      until FindNext(sr) <> 0;
+    finally
+      FindClose(sr);
+    end;
+  end;
+  Result := FileList;
 end;
 
 end.

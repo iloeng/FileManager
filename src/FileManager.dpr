@@ -3,7 +3,8 @@ program FileManager;
 uses
   Vcl.Forms,
   uMainUnit in 'uMainUnit.pas' {Form1},
-  AboutUnit in 'AboutUnit.pas' {AboutBox};
+  AboutUnit in 'AboutUnit.pas' {AboutBox},
+  UtilUnit in 'UtilUnit.pas';
 
 {$R *.res}
 

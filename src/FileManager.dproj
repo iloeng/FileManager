@@ -114,6 +114,7 @@
             <Form>AboutBox</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="UtilUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -140,12 +141,6 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="3">
-                <DeployFile LocalName="Win32\Debug\FileManager.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>FileManager.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="Win32\Release\FileManager.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>FileManager.exe</RemoteName>
