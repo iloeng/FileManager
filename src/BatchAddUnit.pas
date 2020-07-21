@@ -1,9 +1,10 @@
-unit BatchAddUnit;
+﻿unit BatchAddUnit;
 
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls;
 
 type
@@ -34,8 +35,8 @@ uses UtilUnit, uMainUnit;
 
 procedure TBatchAddForm.Button_EnsureClick(Sender: TObject);
 var
-  filelist, temp : TStringList;
-  path : string;
+  filelist, temp: TStringList;
+  path: string;
 
 begin
   if Edit_Path.Text = '' then

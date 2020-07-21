@@ -16,14 +16,14 @@ object BatchAddForm: TBatchAddForm
   object Label_Done: TLabel
     Left = 193
     Top = 111
-    Width = 17
+    Width = 6
     Height = 13
     Caption = '0'
   end
   object Label_Total: TLabel
     Left = 216
     Top = 111
-    Width = 9
+    Width = 6
     Height = 13
     Caption = '0'
   end

@@ -1,9 +1,10 @@
-unit uMainUnit;
+Ôªøunit uMainUnit;
 
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, FireDAC.Stan.Intf, FireDAC.Stan.Option,
   FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def,
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Stan.Param,
@@ -11,11 +12,14 @@ uses
   Vcl.DBGrids, Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client,
   FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLite, FireDAC.VCLUI.Wait,
   FireDAC.Comp.UI, Vcl.Menus, System.Actions, Vcl.ActnList, Vcl.ImgList,
-  Vcl.ComCtrls, Vcl.ToolWin, IdGlobalProtocols, IdHashMessageDigest,IdGlobal,IdHash,
-  FireDAC.Phys.SQLiteDef, System.ImageList, System.Hash, System.Math, Winapi.ShellAPI;
+  Vcl.ComCtrls, Vcl.ToolWin, IdGlobalProtocols, IdHashMessageDigest, IdGlobal,
+  IdHash,
+  FireDAC.Phys.SQLiteDef, System.ImageList, System.Hash, System.Math,
+  Winapi.ShellAPI;
 
 type
   TMD5 = class(TIdHashMessageDigest5);
+
   TuMainForm = class(TForm)
     FDConnection_1: TFDConnection;
     FDQuery_1: TFDQuery;
@@ -43,7 +47,7 @@ type
     procedure FDQuery_1AfterOpen(DataSet: TDataSet);
     procedure MenuItem_DelRowClick(Sender: TObject);
     procedure MenuButton_AboutClick(Sender: TObject);
-    procedure WMDROPFILES(var Msg: TMessage);message WM_DROPFILES;
+    procedure WMDROPFILES(var Msg: TMessage); message WM_DROPFILES;
   private
     procedure GetText(Sender: TField; var Text: String; DisplayText: Boolean);
     { Private declarations }
@@ -53,58 +57,56 @@ type
 
 var
   uMainForm: TuMainForm;
-  function FGetFileTime(sFileName:string; TimeType:Integer):TDateTime;
-  function StreamToMD5(s:TFileStream):string;
-  function GetFileHashMD5(FileName: String): String;
+function FGetFileTime(sFileName: string; TimeType: Integer): TDateTime;
+function StreamToMD5(s: TFileStream): string;
+function GetFileHashMD5(FileName: String): String;
 
-//  function TransBytesToSize(Bytes: Integer): String;
-//  Function RoundingUserDefineDecaimalPart(FloatNum: Double; NoOfDecPart: integer): Double;
-//  function TransFloatToStr(Avalue:double; ADigits:integer):string;
+// function TransBytesToSize(Bytes: Integer): String;
+// Function RoundingUserDefineDecaimalPart(FloatNum: Double; NoOfDecPart: integer): Double;
+// function TransFloatToStr(Avalue:double; ADigits:integer):string;
 
 implementation
 
 uses AboutUnit, UtilUnit;
 
-
 {$R *.dfm}
 
-
-procedure TuMainForm.GetText(Sender: TField; var Text: String;DisplayText: Boolean);
+procedure TuMainForm.GetText(Sender: TField; var Text: String;
+  DisplayText: Boolean);
 begin
-  Text:=Sender.AsString;
+  Text := Sender.AsString;
 end;
-
 
 procedure TuMainForm.FDQuery_1AfterOpen(DataSet: TDataSet);
 begin
-  FDQuery_1.FieldByName('Name').OnGetText :=  GetText;
-  FDQuery_1.FieldByName('Path').OnGetText :=  GetText;
-  FDQuery_1.FieldByName('Size').OnGetText :=  GetText;
+  FDQuery_1.FieldByName('Name').OnGetText := GetText;
+  FDQuery_1.FieldByName('Path').OnGetText := GetText;
+  FDQuery_1.FieldByName('Size').OnGetText := GetText;
 end;
-
 
 procedure TuMainForm.WMDROPFILES(var Msg: TMessage);
 var
-  FilesCount: Integer; // Œƒº˛◊‹ ˝
+  FilesCount: Integer; // Êñá‰ª∂ÊÄªÊï∞
   i: Integer;
-  FileName: array[0..255] of Char;
+  FileName: array [0 .. 255] of Char;
   path: string;
   CreationTime, LastWriteTime, LastAccessTime: TDateTime;
   filenameStr: string;
-  MD5 : string;
+  MD5: string;
   bytes: Integer;
-  size : string;
+  size: string;
 
 const
-  strInsert = 'INSERT INTO Files(Name, Path, Size, Bytes, MD5, CreationTime, LastWriteTime, LastAccessTime)'+
-              ' VALUES(:Name, :Path, :Size, :Bytes, :MD5, :CreationTime, :LastWriteTime, :LastAccessTime)';
+  strInsert =
+    'INSERT INTO Files(Name, Path, Size, Bytes, MD5, CreationTime, LastWriteTime, LastAccessTime)'
+    + ' VALUES(:Name, :Path, :Size, :Bytes, :MD5, :CreationTime, :LastWriteTime, :LastAccessTime)';
 
 begin
-  // ªÒ»°Œƒº˛◊‹ ˝
+  // Ëé∑ÂèñÊñá‰ª∂ÊÄªÊï∞
   FilesCount := DragQueryFile(Msg.WParam, $FFFFFFFF, nil, 0);
-//  Memo1.Lines.Add('Œƒº˛◊‹ ˝Œ™£∫' + IntToStr(FilesCount));
+  // Memo1.Lines.Add('Êñá‰ª∂ÊÄªÊï∞‰∏∫Ôºö' + IntToStr(FilesCount));
 
-  // ªÒ»°Œƒº˛√˚
+  // Ëé∑ÂèñÊñá‰ª∂Âêç
   for i := 0 to FilesCount - 1 do
   begin
     DragQueryFile(Msg.WParam, i, FileName, 256);
@@ -113,7 +115,7 @@ begin
     CreationTime := FGetFileTime(path, 0);
     LastWriteTime := FGetFileTime(path, 1);
     LastAccessTime := FGetFileTime(path, 2);
-    MD5:= GetFileHashMD5(path);
+    MD5 := GetFileHashMD5(path);
     bytes := FileSizeByName(path);
     size := TransBytesToSize(bytes);
     with FDQuery_1 do
@@ -124,22 +126,22 @@ begin
       Open;
     end;
 
-    { ≤È—ØΩ·π˚Œ™ø’£¨‘ÚΩ´–≈œ¢≤Â»Î ˝æ›ø‚÷–£¨≤ªŒ™ø’£¨µØ≥ˆÃ· æ–≈œ¢ }
-    if FDQuery_1.IsEmpty then      //FDQuery_1.RecordCount = 0
+    { Êü•ËØ¢ÁªìÊûú‰∏∫Á©∫ÔºåÂàôÂ∞Ü‰ø°ÊÅØÊèíÂÖ•Êï∞ÊçÆÂ∫ì‰∏≠Ôºå‰∏ç‰∏∫Á©∫ÔºåÂºπÂá∫ÊèêÁ§∫‰ø°ÊÅØ }
+    if FDQuery_1.IsEmpty then // FDQuery_1.RecordCount = 0
     begin
       with FDQuery_1 do
       begin
         Close;
         SQL.Clear;
         SQL.Add(strInsert);
-        ParamByName('Name').AsString:=filenameStr;
-        ParamByName('Path').AsString:=path;
-        ParamByName('Size').AsString:=size;
-        ParamByName('Bytes').AsInteger:=bytes;
-        ParamByName('MD5').AsString:=MD5;
-        ParamByName('CreationTime').AsDateTime:=CreationTime;
-        ParamByName('LastWriteTime').AsDateTime:=LastWriteTime;
-        ParamByName('LastAccessTime').AsDateTime:=LastAccessTime;
+        ParamByName('Name').AsString := filenameStr;
+        ParamByName('Path').AsString := path;
+        ParamByName('Size').AsString := size;
+        ParamByName('Bytes').AsInteger := bytes;
+        ParamByName('MD5').AsString := MD5;
+        ParamByName('CreationTime').AsDateTime := CreationTime;
+        ParamByName('LastWriteTime').AsDateTime := LastWriteTime;
+        ParamByName('LastAccessTime').AsDateTime := LastAccessTime;
         ExecSQL;
         Close;
         Open('Select * from Files');
@@ -147,7 +149,7 @@ begin
     end
     else
     begin
-      MessageBoxA(0, 'Œƒº˛ MD5  ˝æ›ø‚÷–“—¥Ê‘⁄£°', 'Ã· æ', MB_OKCANCEL);
+      MessageBoxA(0, 'Êñá‰ª∂ MD5 Êï∞ÊçÆÂ∫ì‰∏≠Â∑≤Â≠òÂú®ÔºÅ', 'ÊèêÁ§∫', MB_OKCANCEL);
     end;
   end;
 
@@ -155,11 +157,9 @@ begin
   FDQuery_1.Connection := FDConnection_1;
   DataSource_1.DataSet := FDQuery_1;
   DBGrid_Data.DataSource := DataSource_1;
-  //  Õ∑≈
+  // ÈáäÊîæ
   DragFinish(Msg.WParam);
 end;
-
-
 
 procedure TuMainForm.FormCreate(Sender: TObject);
 begin
@@ -192,21 +192,21 @@ begin
       Connected := True;
     end;
 
-    with FDCommand_1.CommandText do
-    begin
-      Add('Create table Files(');
-      Add('ID integer PRIMARY KEY,');
-      Add('Name text,');
-      Add('Path text,');
-      Add('Size text,');
-      Add('Bytes interger,');
-      Add('MD5 string(32),');
-      Add('CreationTime datetime,');
-      Add('LastWriteTime datetime,');
-      Add('LastAccessTime datetime');
-      Add(')');
-    end;
-    FDConnection_1.ExecSQL(FDCommand_1.CommandText.GetText);
+  with FDCommand_1.CommandText do
+  begin
+    Add('Create table Files(');
+    Add('ID integer PRIMARY KEY,');
+    Add('Name text,');
+    Add('Path text,');
+    Add('Size text,');
+    Add('Bytes interger,');
+    Add('MD5 string(32),');
+    Add('CreationTime datetime,');
+    Add('LastWriteTime datetime,');
+    Add('LastAccessTime datetime');
+    Add(')');
+  end;
+  FDConnection_1.ExecSQL(FDCommand_1.CommandText.GetText);
   FDQuery_1.Open('Select * from Files');
   FDQuery_1.Connection := FDConnection_1;
   DataSource_1.DataSet := FDQuery_1;
@@ -216,7 +216,7 @@ end;
 
 procedure TuMainForm.MenuItem_DelRowClick(Sender: TObject);
 var
- id:  Integer;
+  id: Integer;
 begin
   id := FDQuery_1.FieldByName('ID').AsInteger;
   if FDQuery_1.State in [dsBrowse] then
@@ -236,23 +236,24 @@ procedure TuMainForm.ToolButton_NewClick(Sender: TObject);
 var
   path: string;
   CreationTime, LastWriteTime, LastAccessTime: TDateTime;
-  filename: string;
-  MD5 : string;
+  FileName: string;
+  MD5: string;
   bytes: Integer;
-  size : string;
+  size: string;
 
 const
-  strInsert = 'INSERT INTO Files(Name, Path, Size, Bytes, MD5, CreationTime, LastWriteTime, LastAccessTime)'+
-              ' VALUES(:Name, :Path, :Size, :Bytes, :MD5, :CreationTime, :LastWriteTime, :LastAccessTime)';
+  strInsert =
+    'INSERT INTO Files(Name, Path, Size, Bytes, MD5, CreationTime, LastWriteTime, LastAccessTime)'
+    + ' VALUES(:Name, :Path, :Size, :Bytes, :MD5, :CreationTime, :LastWriteTime, :LastAccessTime)';
 begin
   if OpenDialog_File.Execute then
   begin
-    filename := ExtractFileName(OpenDialog_File.FileName);
+    FileName := ExtractFileName(OpenDialog_File.FileName);
     path := OpenDialog_File.FileName;
     CreationTime := FGetFileTime(path, 0);
     LastWriteTime := FGetFileTime(path, 1);
     LastAccessTime := FGetFileTime(path, 2);
-    MD5:= GetFileHashMD5(path);
+    MD5 := GetFileHashMD5(path);
     bytes := FileSizeByName(path);
     size := TransBytesToSize(bytes);
 
@@ -264,22 +265,22 @@ begin
       Open;
     end;
 
-    { ≤È—ØΩ·π˚Œ™ø’£¨‘ÚΩ´–≈œ¢≤Â»Î ˝æ›ø‚÷–£¨≤ªŒ™ø’£¨µØ≥ˆÃ· æ–≈œ¢ }
-    if FDQuery_1.IsEmpty then      //FDQuery_1.RecordCount = 0
+    { Êü•ËØ¢ÁªìÊûú‰∏∫Á©∫ÔºåÂàôÂ∞Ü‰ø°ÊÅØÊèíÂÖ•Êï∞ÊçÆÂ∫ì‰∏≠Ôºå‰∏ç‰∏∫Á©∫ÔºåÂºπÂá∫ÊèêÁ§∫‰ø°ÊÅØ }
+    if FDQuery_1.IsEmpty then // FDQuery_1.RecordCount = 0
     begin
       with FDQuery_1 do
       begin
         Close;
         SQL.Clear;
         SQL.Add(strInsert);
-        ParamByName('Name').AsString:=filename;
-        ParamByName('Path').AsString:=path;
-        ParamByName('Size').AsString:=size;
-        ParamByName('Bytes').AsInteger:=bytes;
-        ParamByName('MD5').AsString:=MD5;
-        ParamByName('CreationTime').AsDateTime:=CreationTime;
-        ParamByName('LastWriteTime').AsDateTime:=LastWriteTime;
-        ParamByName('LastAccessTime').AsDateTime:=LastAccessTime;
+        ParamByName('Name').AsString := FileName;
+        ParamByName('Path').AsString := path;
+        ParamByName('Size').AsString := size;
+        ParamByName('Bytes').AsInteger := bytes;
+        ParamByName('MD5').AsString := MD5;
+        ParamByName('CreationTime').AsDateTime := CreationTime;
+        ParamByName('LastWriteTime').AsDateTime := LastWriteTime;
+        ParamByName('LastAccessTime').AsDateTime := LastAccessTime;
         ExecSQL;
         Close;
         Open('Select * from Files');
@@ -287,7 +288,7 @@ begin
     end
     else
     begin
-      MessageBoxA(0, 'Œƒº˛ MD5  ˝æ›ø‚÷–“—¥Ê‘⁄£°', 'Ã· æ', MB_OKCANCEL);
+      MessageBoxA(0, 'Êñá‰ª∂ MD5 Êï∞ÊçÆÂ∫ì‰∏≠Â∑≤Â≠òÂú®ÔºÅ', 'ÊèêÁ§∫', MB_OKCANCEL);
     end;
   end;
   FDQuery_1.Open('Select * from Files');
@@ -296,43 +297,45 @@ begin
   DBGrid_Data.DataSource := DataSource_1;
 end;
 
-function FGetFileTime(sFileName:string; TimeType:Integer):TDateTime;
+function FGetFileTime(sFileName: string; TimeType: Integer): TDateTime;
 var
-  ffd:TWin32FindData;
-  dft:DWord;
-  lft,Time:TFileTime;
-  H:THandle;
+  ffd: TWin32FindData;
+  dft: DWord;
+  lft, Time: TFileTime;
+  H: THandle;
 begin
-  H:= Winapi.Windows.FindFirstFile(PChar(sFileName),ffd);
+  H := Winapi.Windows.FindFirstFile(PChar(sFileName), ffd);
   case TimeType of
-    0:Time:=ffd.ftCreationTime;
-    1:Time:=ffd.ftLastWriteTime;
-    2:Time:=ffd.ftLastAccessTime;
+    0:
+      Time := ffd.ftCreationTime;
+    1:
+      Time := ffd.ftLastWriteTime;
+    2:
+      Time := ffd.ftLastAccessTime;
   end;
-  { ªÒ»°Œƒº˛–≈œ¢ }
-  if(H<>INVALID_HANDLE_VALUE)then
+  { Ëé∑ÂèñÊñá‰ª∂‰ø°ÊÅØ }
+  if (H <> INVALID_HANDLE_VALUE) then
   begin
-    { ÷ª≤È’““ª∏ˆŒƒº˛£¨À˘“‘πÿµÙ find }
+    { Âè™Êü•Êâæ‰∏Ä‰∏™Êñá‰ª∂ÔºåÊâÄ‰ª•ÂÖ≥Êéâ find }
     Winapi.Windows.FindClose(H);
-    { ◊™ªª FILETIME ∏Ò Ω≥…Œ™ localFILETIME ∏Ò Ω }
-    FileTimeToLocalFileTime(Time,lft);
-    { ◊™ªª FILETIME ∏Ò Ω≥…Œ™ DOStime ∏Ò Ω }
-    FileTimeToDosDateTime(lft,LongRec(dft).Hi,LongRec(dft).Lo);
-    { ◊Ó∫Û£¨◊™ªª DOStime ∏Ò Ω≥…Œ™ Delphi ”¶”√µƒ TdateTime ∏Ò Ω }
-    Result:=FileDateToDateTime(dft);
+    { ËΩ¨Êç¢ FILETIME Ê†ºÂºèÊàê‰∏∫ localFILETIME Ê†ºÂºè }
+    FileTimeToLocalFileTime(Time, lft);
+    { ËΩ¨Êç¢ FILETIME Ê†ºÂºèÊàê‰∏∫ DOStime Ê†ºÂºè }
+    FileTimeToDosDateTime(lft, LongRec(dft).Hi, LongRec(dft).Lo);
+    { ÊúÄÂêéÔºåËΩ¨Êç¢ DOStime Ê†ºÂºèÊàê‰∏∫ Delphi Â∫îÁî®ÁöÑ TdateTime Ê†ºÂºè }
+    Result := FileDateToDateTime(dft);
   end
   else
-    result:=0;
+    Result := 0;
 end;
 
-
-function StreamToMD5(s:TFileStream):string;
+function StreamToMD5(s: TFileStream): string;
 var
-  MD5Encode:TMD5;
+  MD5Encode: TMD5;
 begin
-  MD5Encode:=TMD5.Create;
+  MD5Encode := TMD5.Create;
   try
-    result:=md5encode.HashStreamAsHex(s);
+    Result := MD5Encode.HashStreamAsHex(s);
   finally
     MD5Encode.Free;
   end;
@@ -342,7 +345,7 @@ function GetFileHashMD5(FileName: String): String;
 var
   HashMD5: THashMD5;
   BufLen, Readed: Integer;
-  Stream: TFileStream ;
+  Stream: TFileStream;
   Buffer: Pointer;
 
 begin
@@ -352,7 +355,7 @@ begin
   try
     Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
     try
-      while Stream.Position < Stream.Size do
+      while Stream.Position < Stream.size do
       begin
         Readed := Stream.Read(Buffer^, BufLen);
         if Readed > 0 then
@@ -367,6 +370,7 @@ begin
     FreeMem(Buffer)
   end;
 
-  result := HashMD5.HashAsString.ToUpper;
+  Result := HashMD5.HashAsString.ToUpper;
 end;
+
 end.

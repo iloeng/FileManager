@@ -1,113 +1,116 @@
-unit UtilUnit;
+ï»¿unit UtilUnit;
 
 interface
 
 uses
   System.SysUtils, System.Math, System.Classes;
 
-Function RoundingUserDefineDecaimalPart(FloatNum: Double; NoOfDecPart: integer): Double;
-Function TransBytesToSize(Bytes: Integer): String;
-Function TransFloatToStr(Avalue : Double; ADigits : Integer) : String;
-Function EnumAllFiles(strPath: string; FileList: TStringList; CheckSub: Boolean = False): TStringList;
+Function RoundingUserDefineDecaimalPart(FloatNum: Double;
+  NoOfDecPart: integer): Double;
+Function TransBytesToSize(Bytes: integer): String;
+Function TransFloatToStr(Avalue: Double; ADigits: integer): String;
+Function EnumAllFiles(strPath: string; FileList: TStringList;
+  CheckSub: Boolean = False): TStringList;
 
 implementation
 
-
-function TransBytesToSize(Bytes: Integer): String;
+function TransBytesToSize(Bytes: integer): String;
 var
-//  temp : Double;
-  temp : String;
+  // temp : Double;
+  temp: String;
 begin
-  if Bytes < 1024 then   { ×Ö½Ú }
+  if Bytes < 1024 then { å­—èŠ‚ }
   begin
     result := IntToStr(Bytes) + ' Byte';
   end
 
-  else if Bytes < 1024 * 1024 then  { KB }
+  else if Bytes < 1024 * 1024 then { KB }
   begin
-//    temp :=  RoundingUserDefineDecaimalPart(Bytes / 1024, 2);
-//    result := FloatToStr(temp) + ' KB';
-    temp :=  TransFloatToStr(Bytes / 1024, 2);
+    // temp :=  RoundingUserDefineDecaimalPart(Bytes / 1024, 2);
+    // result := FloatToStr(temp) + ' KB';
+    temp := TransFloatToStr(Bytes / 1024, 2);
     result := temp + ' KB';
   end
 
-  else if Bytes < 1024 * 1024 * 1024 then  { MB }
+  else if Bytes < 1024 * 1024 * 1024 then { MB }
   begin
-//    temp :=  RoundingUserDefineDecaimalPart(Bytes / (1024 * 1024),2);
-//    result := FloatToStr(temp) + ' MB';
-    temp :=  TransFloatToStr(Bytes / (1024 * 1024),2);
+    // temp :=  RoundingUserDefineDecaimalPart(Bytes / (1024 * 1024),2);
+    // result := FloatToStr(temp) + ' MB';
+    temp := TransFloatToStr(Bytes / (1024 * 1024), 2);
     result := temp + ' MB';
   end
 
   else { GB }
   begin
-//    temp :=  RoundingUserDefineDecaimalPart(Bytes / (1024 * 1024 * 1024), 2);
-//    result := FloatToStr(temp) + ' GB';
-    temp :=  TransFloatToStr(Bytes / (1024 * 1024 * 1024), 2);
+    // temp :=  RoundingUserDefineDecaimalPart(Bytes / (1024 * 1024 * 1024), 2);
+    // result := FloatToStr(temp) + ' GB';
+    temp := TransFloatToStr(Bytes / (1024 * 1024 * 1024), 2);
     result := temp + ' GB';
   end
 end;
 
-//FormatFloat('#.##', f)
+// FormatFloat('#.##', f)
 
-Function RoundingUserDefineDecaimalPart(FloatNum: Double; NoOfDecPart: integer): Double;
-{ Í¬ÏÂ£¬²»½øĞĞËÄÉáÎåÈë }
+Function RoundingUserDefineDecaimalPart(FloatNum: Double;
+  NoOfDecPart: integer): Double;
+{ åŒä¸‹ï¼Œä¸è¿›è¡Œå››èˆäº”å…¥ }
 Var
-    ls_FloatNumber: String;
+  ls_FloatNumber: String;
 Begin
-    ls_FloatNumber := FloatToStr(FloatNum);
-    IF Pos('.', ls_FloatNumber) > 0 Then
-      Result := StrToFloat(copy(ls_FloatNumber, 1, Pos('.', ls_FloatNumber) - 1) + '.' + copy
-       (ls_FloatNumber, Pos('.', ls_FloatNumber) + 1, NoOfDecPart))
-    Else
-      Result := FloatNum;
+  ls_FloatNumber := FloatToStr(FloatNum);
+  IF Pos('.', ls_FloatNumber) > 0 Then
+    result := StrToFloat(copy(ls_FloatNumber, 1, Pos('.', ls_FloatNumber) - 1) +
+      '.' + copy(ls_FloatNumber, Pos('.', ls_FloatNumber) + 1, NoOfDecPart))
+  Else
+    result := FloatNum;
 End;
 
-
-function TransFloatToStr(Avalue : Double; ADigits : Integer) : String;
-{ ¶Ô¸¡µãÖµ±£Áô ADigits Î»Ğ¡Êı£¬ ËÄÉáÎåÈë }
+function TransFloatToStr(Avalue: Double; ADigits: integer): String;
+{ å¯¹æµ®ç‚¹å€¼ä¿ç•™ ADigits ä½å°æ•°ï¼Œ å››èˆäº”å…¥ }
 var
-  v : Double;
-  p : Integer;
-  e : String;
+  v: Double;
+  p: integer;
+  e: String;
 begin
-  if abs(Avalue)<1 then
+  if abs(Avalue) < 1 then
   begin
-    result := floatTostr(Avalue);
-    p := pos('E', result);
+    result := FloatToStr(Avalue);
+    p := Pos('E', result);
     if p > 0 then
     begin
       e := copy(result, p, length(result));
-      setlength(result, p-1);
-      v := RoundTo(StrToFloat(result), -Adigits);
+      setlength(result, p - 1);
+      v := RoundTo(StrToFloat(result), -ADigits);
       result := FloatToStr(v) + e;
     end
     else
-      result := FloatToStr(RoundTo(Avalue, -Adigits));
+      result := FloatToStr(RoundTo(Avalue, -ADigits));
   end
   else
-    result := FloatToStr(RoundTo(Avalue, -Adigits));
+    result := FloatToStr(RoundTo(Avalue, -ADigits));
 end;
 
-
-{¹¦ÄÜ:Ã¶¾ÙÖ¸¶¨Ä¿Â¼¼°×ÓÄ¿Â¼ÏÂµÄËùÓĞÎÄ¼ş}
-function EnumAllFiles(strPath: string; FileList: TStringList; CheckSub: Boolean = False): TStringList;
+{ åŠŸèƒ½:æšä¸¾æŒ‡å®šç›®å½•åŠå­ç›®å½•ä¸‹çš„æ‰€æœ‰æ–‡ä»¶ }
+function EnumAllFiles(strPath: string; FileList: TStringList;
+  CheckSub: Boolean = False): TStringList;
 var
   sr: TSearchRec;
 begin
-  Result := TStringList.Create;
-  if strPath = '' then Exit;
+  result := TStringList.Create;
+  if strPath = '' then
+    Exit;
 
   strPath := IncludeTrailingPathDelimiter(strPath);
 
-  if not DirectoryExists(strPath) then Exit;
+  if not DirectoryExists(strPath) then
+    Exit;
 
   if FindFirst(strPath + '*.*', System.SysUtils.faAnyFile, sr) = 0 then
   begin
     try
       repeat
-        //·ÇÄ¿Â¼µÄ£¬¾ÍÊÇÎÄ¼ş
-        if (sr.Attr and System.SysUtils.faDirectory = 0 ) then
+        // éç›®å½•çš„ï¼Œå°±æ˜¯æ–‡ä»¶
+        if (sr.Attr and System.SysUtils.faDirectory = 0) then
         begin
           FileList.Add(strPath + sr.Name);
         end;
@@ -117,12 +120,14 @@ begin
     end;
   end;
 
-  //²éÕÒ×ÓÄ¿Â¼¡£
-  if (FindFirst(strPath + '*', System.SysUtils.faDirectory, sr) = 0) and CheckSub  then
+  // æŸ¥æ‰¾å­ç›®å½•ã€‚
+  if (FindFirst(strPath + '*', System.SysUtils.faDirectory, sr) = 0) and CheckSub
+  then
   begin
     try
       repeat
-        if (sr.Attr and System.SysUtils.faDirectory<>0) and (sr.Name<>'.') and (sr.Name<>'..') then
+        if (sr.Attr and System.SysUtils.faDirectory <> 0) and (sr.Name <> '.')
+          and (sr.Name <> '..') then
         begin
           EnumAllFiles(strPath + sr.Name, FileList, CheckSub);
         end;
@@ -131,7 +136,7 @@ begin
       FindClose(sr);
     end;
   end;
-  Result := FileList;
+  result := FileList;
 end;
 
 end.
