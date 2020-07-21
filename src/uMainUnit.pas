@@ -12,7 +12,7 @@ uses
   FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLite, FireDAC.VCLUI.Wait,
   FireDAC.Comp.UI, Vcl.Menus, System.Actions, Vcl.ActnList, Vcl.ImgList,
   Vcl.ComCtrls, Vcl.ToolWin, IdGlobalProtocols, IdHashMessageDigest,IdGlobal,IdHash,
-  FireDAC.Phys.SQLiteDef, System.ImageList, System.Hash, System.Math;
+  FireDAC.Phys.SQLiteDef, System.ImageList, System.Hash, System.Math, Winapi.ShellAPI;
 
 type
   TMD5 = class(TIdHashMessageDigest5);
@@ -43,6 +43,7 @@ type
     procedure FDQuery_1AfterOpen(DataSet: TDataSet);
     procedure MenuItem_DelRowClick(Sender: TObject);
     procedure MenuButton_AboutClick(Sender: TObject);
+    procedure WMDROPFILES(var Msg: TMessage);message WM_DROPFILES;
   private
     procedure GetText(Sender: TField; var Text: String; DisplayText: Boolean);
     { Private declarations }
@@ -55,6 +56,7 @@ var
   function FGetFileTime(sFileName:string; TimeType:Integer):TDateTime;
   function StreamToMD5(s:TFileStream):string;
   function GetFileHashMD5(FileName: String): String;
+
 //  function TransBytesToSize(Bytes: Integer): String;
 //  Function RoundingUserDefineDecaimalPart(FloatNum: Double; NoOfDecPart: integer): Double;
 //  function TransFloatToStr(Avalue:double; ADigits:integer):string;
@@ -80,8 +82,88 @@ begin
   FDQuery_1.FieldByName('Size').OnGetText :=  GetText;
 end;
 
+
+procedure TuMainForm.WMDROPFILES(var Msg: TMessage);
+var
+  FilesCount: Integer; // 文件总数
+  i: Integer;
+  FileName: array[0..255] of Char;
+  path: string;
+  CreationTime, LastWriteTime, LastAccessTime: TDateTime;
+  filenameStr: string;
+  MD5 : string;
+  bytes: Integer;
+  size : string;
+
+const
+  strInsert = 'INSERT INTO Files(Name, Path, Size, Bytes, MD5, CreationTime, LastWriteTime, LastAccessTime)'+
+              ' VALUES(:Name, :Path, :Size, :Bytes, :MD5, :CreationTime, :LastWriteTime, :LastAccessTime)';
+
+begin
+  // 获取文件总数
+  FilesCount := DragQueryFile(Msg.WParam, $FFFFFFFF, nil, 0);
+//  Memo1.Lines.Add('文件总数为：' + IntToStr(FilesCount));
+
+  // 获取文件名
+  for i := 0 to FilesCount - 1 do
+  begin
+    DragQueryFile(Msg.WParam, i, FileName, 256);
+    filenameStr := ExtractFileName(FileName);
+    path := FileName;
+    CreationTime := FGetFileTime(path, 0);
+    LastWriteTime := FGetFileTime(path, 1);
+    LastAccessTime := FGetFileTime(path, 2);
+    MD5:= GetFileHashMD5(path);
+    bytes := FileSizeByName(path);
+    size := TransBytesToSize(bytes);
+    with FDQuery_1 do
+    begin
+      Close;
+      SQL.Clear;
+      SQL.Add('Select * from Files where MD5="' + MD5 + '"');
+      Open;
+    end;
+
+    { 查询结果为空，则将信息插入数据库中，不为空，弹出提示信息 }
+    if FDQuery_1.IsEmpty then      //FDQuery_1.RecordCount = 0
+    begin
+      with FDQuery_1 do
+      begin
+        Close;
+        SQL.Clear;
+        SQL.Add(strInsert);
+        ParamByName('Name').AsString:=filenameStr;
+        ParamByName('Path').AsString:=path;
+        ParamByName('Size').AsString:=size;
+        ParamByName('Bytes').AsInteger:=bytes;
+        ParamByName('MD5').AsString:=MD5;
+        ParamByName('CreationTime').AsDateTime:=CreationTime;
+        ParamByName('LastWriteTime').AsDateTime:=LastWriteTime;
+        ParamByName('LastAccessTime').AsDateTime:=LastAccessTime;
+        ExecSQL;
+        Close;
+        Open('Select * from Files');
+      end;
+    end
+    else
+    begin
+      MessageBoxA(0, '文件 MD5 数据库中已存在！', '提示', MB_OKCANCEL);
+    end;
+  end;
+
+  FDQuery_1.Open('Select * from Files');
+  FDQuery_1.Connection := FDConnection_1;
+  DataSource_1.DataSet := FDQuery_1;
+  DBGrid_Data.DataSource := DataSource_1;
+  // 释放
+  DragFinish(Msg.WParam);
+end;
+
+
+
 procedure TuMainForm.FormCreate(Sender: TObject);
 begin
+  DragAcceptFiles(Handle, True);
   FDConnection_1.DriverName := 'SQLite';
   FDConnection_1.Params.Add('DriverID=SQLite');
   FDConnection_1.Params.Add('Database=data.db');
