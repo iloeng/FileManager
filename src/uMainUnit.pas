@@ -36,6 +36,7 @@ type
     MenuItem_DelRow: TMenuItem;
     MenuButton_Help: TMenuItem;
     MenuButton_About: TMenuItem;
+    ToolButton_BatchNew: TToolButton;
     procedure MenuButton_OpenDBClick(Sender: TObject);
     procedure ToolButton_NewClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);

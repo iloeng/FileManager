@@ -1,14 +1,16 @@
 unit UtilUnit;
 
 interface
-Function RoundingUserDefineDecaimalPart(FloatNum: Double; NoOfDecPart: integer): Double;
-function TransBytesToSize(Bytes: Integer): String;
-function TransFloatToStr(Avalue : Double; ADigits : Integer) : String;
-
-implementation
 
 uses
-System.SysUtils, System.Math, System.Classes;
+  System.SysUtils, System.Math, System.Classes;
+
+Function RoundingUserDefineDecaimalPart(FloatNum: Double; NoOfDecPart: integer): Double;
+Function TransBytesToSize(Bytes: Integer): String;
+Function TransFloatToStr(Avalue : Double; ADigits : Integer) : String;
+Function EnumAllFiles(strPath: string; FileList: TStringList; CheckSub: Boolean = False): TStringList;
+
+implementation
 
 
 function TransBytesToSize(Bytes: Integer): String;
