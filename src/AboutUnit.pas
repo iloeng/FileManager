@@ -1,4 +1,4 @@
-unit AboutUnit;
+﻿unit AboutUnit;
 
 interface
 
@@ -34,4 +34,3 @@ begin
 end;
 
 end.
- 
