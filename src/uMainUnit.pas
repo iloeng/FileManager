@@ -12,13 +12,10 @@ uses
   Vcl.DBGrids, Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client,
   FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLite, FireDAC.VCLUI.Wait,
   FireDAC.Comp.UI, Vcl.Menus, System.Actions, Vcl.ActnList, Vcl.ImgList,
-  Vcl.ComCtrls, Vcl.ToolWin, IdGlobalProtocols, IdHashMessageDigest, IdGlobal,
-  IdHash,
-  FireDAC.Phys.SQLiteDef, System.ImageList, System.Hash, System.Math,
-  Winapi.ShellAPI;
+  Vcl.ComCtrls, Vcl.ToolWin, IdGlobalProtocols, FireDAC.Phys.SQLiteDef,
+  System.ImageList, System.Math, Winapi.ShellAPI;
 
 type
-  TMD5 = class(TIdHashMessageDigest5);
 
   TuMainForm = class(TForm)
     FDConnection_1: TFDConnection;
@@ -57,13 +54,6 @@ type
 
 var
   uMainForm: TuMainForm;
-function FGetFileTime(sFileName: string; TimeType: Integer): TDateTime;
-function StreamToMD5(s: TFileStream): string;
-function GetFileHashMD5(FileName: String): String;
-
-// function TransBytesToSize(Bytes: Integer): String;
-// Function RoundingUserDefineDecaimalPart(FloatNum: Double; NoOfDecPart: integer): Double;
-// function TransFloatToStr(Avalue:double; ADigits:integer):string;
 
 implementation
 
@@ -295,82 +285,6 @@ begin
   FDQuery_1.Connection := FDConnection_1;
   DataSource_1.DataSet := FDQuery_1;
   DBGrid_Data.DataSource := DataSource_1;
-end;
-
-function FGetFileTime(sFileName: string; TimeType: Integer): TDateTime;
-var
-  ffd: TWin32FindData;
-  dft: DWord;
-  lft, Time: TFileTime;
-  H: THandle;
-begin
-  H := Winapi.Windows.FindFirstFile(PChar(sFileName), ffd);
-  case TimeType of
-    0:
-      Time := ffd.ftCreationTime;
-    1:
-      Time := ffd.ftLastWriteTime;
-    2:
-      Time := ffd.ftLastAccessTime;
-  end;
-  { 获取文件信息 }
-  if (H <> INVALID_HANDLE_VALUE) then
-  begin
-    { 只查找一个文件，所以关掉 find }
-    Winapi.Windows.FindClose(H);
-    { 转换 FILETIME 格式成为 localFILETIME 格式 }
-    FileTimeToLocalFileTime(Time, lft);
-    { 转换 FILETIME 格式成为 DOStime 格式 }
-    FileTimeToDosDateTime(lft, LongRec(dft).Hi, LongRec(dft).Lo);
-    { 最后，转换 DOStime 格式成为 Delphi 应用的 TdateTime 格式 }
-    Result := FileDateToDateTime(dft);
-  end
-  else
-    Result := 0;
-end;
-
-function StreamToMD5(s: TFileStream): string;
-var
-  MD5Encode: TMD5;
-begin
-  MD5Encode := TMD5.Create;
-  try
-    Result := MD5Encode.HashStreamAsHex(s);
-  finally
-    MD5Encode.Free;
-  end;
-end;
-
-function GetFileHashMD5(FileName: String): String;
-var
-  HashMD5: THashMD5;
-  BufLen, Readed: Integer;
-  Stream: TFileStream;
-  Buffer: Pointer;
-
-begin
-  HashMD5 := THashMD5.Create;
-  BufLen := 32 * 1024;
-  Buffer := AllocMem(BufLen);
-  try
-    Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
-    try
-      while Stream.Position < Stream.size do
-      begin
-        Readed := Stream.Read(Buffer^, BufLen);
-        if Readed > 0 then
-        begin
-          HashMD5.update(Buffer^, Readed);
-        end;
-      end;
-    finally
-      Stream.Free;
-    end;
-  finally
-    FreeMem(Buffer)
-  end;
-
-  Result := HashMD5.HashAsString.ToUpper;
 end;
 
 end.
