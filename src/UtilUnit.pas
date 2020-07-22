@@ -18,6 +18,7 @@ Function FGetFileTime(sFileName: string; TimeType: integer): TDateTime;
 
 implementation
 
+
 function TransBytesToSize(Bytes: integer): String;
 var
   // temp : Double;
@@ -69,7 +70,8 @@ Begin
     result := FloatNum;
 End;
 
-function TransFloatToStr(Avalue: Double; ADigits: integer): String;
+
+Function TransFloatToStr(Avalue: Double; ADigits: integer): String;
 { 对浮点值保留 ADigits 位小数， 四舍五入 }
 var
   v: Double;
@@ -94,8 +96,9 @@ begin
     result := FloatToStr(RoundTo(Avalue, -ADigits));
 end;
 
+
 { 功能:枚举指定目录及子目录下的所有文件 }
-function EnumAllFiles(strPath: string; FileList: TStringList;
+Function EnumAllFiles(strPath: string; FileList: TStringList;
   CheckSub: Boolean = False): TStringList;
 var
   sr: TSearchRec;
@@ -137,13 +140,14 @@ begin
         end;
       until FindNext(sr) <> 0;
     finally
-      FindClose(sr);
+      System.SysUtils.FindClose(sr);
     end;
   end;
   result := FileList;
 end;
 
-function StreamToMD5(s: TFileStream): string;
+
+Function StreamToMD5(s: TFileStream): string;
 var
   MD5Encode: TIdHashMessageDigest5;
 begin
@@ -155,7 +159,8 @@ begin
   end;
 end;
 
-function GetFileHashMD5(FileName: String): String;
+
+Function GetFileHashMD5(FileName: String): String;
 var
   HashMD5: THashMD5;
   BufLen, Readed: integer;
@@ -187,7 +192,8 @@ begin
   result := HashMD5.HashAsString.ToUpper;
 end;
 
-function FGetFileTime(sFileName: string; TimeType: integer): TDateTime;
+
+Function FGetFileTime(sFileName: string; TimeType: integer): TDateTime;
 var
   ffd: TWin32FindData;
   dft: DWord;
