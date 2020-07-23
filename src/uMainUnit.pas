@@ -38,6 +38,9 @@ type
     MenuButton_Help: TMenuItem;
     MenuButton_About: TMenuItem;
     ToolButton_BatchNew: TToolButton;
+    N2: TMenuItem;
+    MenuItem_DelAll: TMenuItem;
+    MenuItem_OpenDir: TMenuItem;
     procedure MenuButton_OpenDBClick(Sender: TObject);
     procedure ToolButton_NewClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -45,6 +48,7 @@ type
     procedure MenuItem_DelRowClick(Sender: TObject);
     procedure MenuButton_AboutClick(Sender: TObject);
     procedure WMDROPFILES(var Msg: TMessage); message WM_DROPFILES;
+    procedure MenuItem_DelAllClick(Sender: TObject);
   private
     procedure GetText(Sender: TField; var Text: String; DisplayText: Boolean);
     { Private declarations }
@@ -202,6 +206,23 @@ begin
   DataSource_1.DataSet := FDQuery_1;
   DBGrid_Data.DataSource := DataSource_1;
 
+end;
+
+procedure TuMainForm.MenuItem_DelAllClick(Sender: TObject);
+var
+  flag : Integer;
+begin
+  flag := MessageBox(0, '确认删除？' + #10#13 + '一旦删除，数据将无法恢复！！！', '警告', MB_OKCANCEL);
+  if flag = 1 then
+  begin
+    FDQuery_1.Close;
+    FDQuery_1.SQL.Clear;
+    FDQuery_1.SQL.Add('delete from files');
+    FDQuery_1.ExecSQL;
+    FDQuery_1.Close;
+    FDQuery_1.SQL.Clear;
+    FDQuery_1.Open('Select * from Files');
+  end;
 end;
 
 procedure TuMainForm.MenuItem_DelRowClick(Sender: TObject);
