@@ -426,6 +426,10 @@ object uMainForm: TuMainForm
   object PopupMenu1: TPopupMenu
     Left = 544
     Top = 240
+    object MenuItem_OpenFile: TMenuItem
+      Caption = #25171#24320#25991#20214
+      OnClick = MenuItem_OpenFileClick
+    end
     object MenuItem_OpenDir: TMenuItem
       Caption = #25171#24320#36335#24452
     end
