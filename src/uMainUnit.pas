@@ -51,6 +51,7 @@ type
     procedure WMDROPFILES(var Msg: TMessage); message WM_DROPFILES;
     procedure MenuItem_DelAllClick(Sender: TObject);
     procedure MenuItem_OpenFileClick(Sender: TObject);
+    procedure MenuItem_OpenDirClick(Sender: TObject);
   private
     procedure GetText(Sender: TField; var Text: String; DisplayText: Boolean);
     { Private declarations }
@@ -243,6 +244,15 @@ begin
     FDQuery_1.Open('Select * from Files');
   end;
 
+end;
+
+procedure TuMainForm.MenuItem_OpenDirClick(Sender: TObject);
+var
+  dir : string;
+begin
+  dir := FDQuery_1.FieldByName('Path').AsString;
+  if FDQuery_1.State in [dsBrowse] then
+    ShellExecute(Handle, 'open', 'Explorer.exe', PWideChar(ExtractFilePath(dir)), nil, 1);
 end;
 
 procedure TuMainForm.MenuItem_OpenFileClick(Sender: TObject);

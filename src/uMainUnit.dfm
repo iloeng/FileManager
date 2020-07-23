@@ -432,6 +432,7 @@ object uMainForm: TuMainForm
     end
     object MenuItem_OpenDir: TMenuItem
       Caption = #25171#24320#36335#24452
+      OnClick = MenuItem_OpenDirClick
     end
     object MenuItem_DelRow: TMenuItem
       Caption = #21024#38500#35760#24405
