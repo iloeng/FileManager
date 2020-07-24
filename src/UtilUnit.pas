@@ -4,7 +4,8 @@ interface
 
 uses
   System.SysUtils, System.Math, System.Classes, IdHashMessageDigest, IdGlobal,
-  IdHash, System.Hash, Winapi.Windows;
+  IdHash, System.Hash, Winapi.Windows, FireDAC.Comp.Client, IdGlobalProtocols,
+  Data.DB, FireDAC.Stan.Param;
 
 Function RoundingUserDefineDecaimalPart(FloatNum: Double;
   NoOfDecPart: integer): Double;
@@ -15,9 +16,9 @@ Function EnumAllFiles(strPath: string; FileList: TStringList;
 Function StreamToMD5(s: TFileStream): string;
 Function GetFileHashMD5(FileName: String): String;
 Function FGetFileTime(sFileName: string; TimeType: integer): TDateTime;
+procedure InsertFileInfo(FQuery: TFDQuery; FilePath: string);
 
 implementation
-
 
 function TransBytesToSize(Bytes: integer): String;
 var
@@ -70,7 +71,6 @@ Begin
     result := FloatNum;
 End;
 
-
 Function TransFloatToStr(Avalue: Double; ADigits: integer): String;
 { 对浮点值保留 ADigits 位小数， 四舍五入 }
 var
@@ -95,7 +95,6 @@ begin
   else
     result := FloatToStr(RoundTo(Avalue, -ADigits));
 end;
-
 
 { 功能:枚举指定目录及子目录下的所有文件 }
 Function EnumAllFiles(strPath: string; FileList: TStringList;
@@ -146,7 +145,6 @@ begin
   result := FileList;
 end;
 
-
 Function StreamToMD5(s: TFileStream): string;
 var
   MD5Encode: TIdHashMessageDigest5;
@@ -158,7 +156,6 @@ begin
     MD5Encode.Free;
   end;
 end;
-
 
 Function GetFileHashMD5(FileName: String): String;
 var
@@ -192,7 +189,6 @@ begin
   result := HashMD5.HashAsString.ToUpper;
 end;
 
-
 Function FGetFileTime(sFileName: string; TimeType: integer): TDateTime;
 var
   ffd: TWin32FindData;
@@ -223,6 +219,63 @@ begin
   end
   else
     result := 0;
+end;
+
+procedure InsertFileInfo(FQuery: TFDQuery; FilePath: string);
+var
+  path: string;
+  CreationTime, LastWriteTime, LastAccessTime: TDateTime;
+  FileName: string;
+  MD5: string;
+  Bytes: integer;
+  size: string;
+const
+  strInsert =
+    'INSERT INTO Files(Name, Path, Size, Bytes, MD5, CreationTime, LastWriteTime, LastAccessTime)'
+    + ' VALUES(:Name, :Path, :Size, :Bytes, :MD5, :CreationTime, :LastWriteTime, :LastAccessTime)';
+begin
+  FileName := ExtractFileName(FilePath);
+  path := FilePath;
+  CreationTime := FGetFileTime(path, 0);
+  LastWriteTime := FGetFileTime(path, 1);
+  LastAccessTime := FGetFileTime(path, 2);
+  MD5 := GetFileHashMD5(path);
+  Bytes := FileSizeByName(path);
+  size := TransBytesToSize(Bytes);
+  with FQuery do
+  begin
+    Close;
+    SQL.Clear;
+    SQL.Add('Select * from Files where MD5="' + MD5 + '"');
+    Open;
+  end;
+
+  { 查询结果为空，则将信息插入数据库中，不为空，弹出提示信息 }
+  if FQuery.IsEmpty then // FDQuery_1.RecordCount = 0
+  begin
+    with FQuery do
+    begin
+      Close;
+      SQL.Clear;
+      SQL.Add(strInsert);
+      ParamByName('Name').AsString := FileName;
+      ParamByName('Path').AsString := path;
+      ParamByName('Size').AsString := size;
+      ParamByName('Bytes').AsInteger := Bytes;
+      ParamByName('MD5').AsString := MD5;
+      ParamByName('CreationTime').AsDateTime := CreationTime;
+      ParamByName('LastWriteTime').AsDateTime := LastWriteTime;
+      ParamByName('LastAccessTime').AsDateTime := LastAccessTime;
+      ExecSQL;
+      Close;
+      Open('Select * from Files');
+    end;
+  end
+  else
+  begin
+    MessageBox(0, PWideChar(FileName + #10#13 + '文件 MD5 数据库中已存在！'), '提示',
+      MB_OKCANCEL);
+  end;
 end;
 
 end.
