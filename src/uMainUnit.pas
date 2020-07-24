@@ -61,6 +61,9 @@ type
 
 var
   uMainForm: TuMainForm;
+  procedure InsertInto(FQuery: TFDQuery; FileName: string; path: string;
+  size: string; bytes: Integer; MD5: string; CreationTime: TDateTime;
+  LastWriteTime: TDateTime; LastAccessTime: TDateTime);
 
 implementation
 
@@ -115,39 +118,7 @@ begin
     MD5 := GetFileHashMD5(path);
     bytes := FileSizeByName(path);
     size := TransBytesToSize(bytes);
-    with FDQuery_1 do
-    begin
-      Close;
-      SQL.Clear;
-      SQL.Add('Select * from Files where MD5="' + MD5 + '"');
-      Open;
-    end;
-
-    { 查询结果为空，则将信息插入数据库中，不为空，弹出提示信息 }
-    if FDQuery_1.IsEmpty then // FDQuery_1.RecordCount = 0
-    begin
-      with FDQuery_1 do
-      begin
-        Close;
-        SQL.Clear;
-        SQL.Add(strInsert);
-        ParamByName('Name').AsString := filenameStr;
-        ParamByName('Path').AsString := path;
-        ParamByName('Size').AsString := size;
-        ParamByName('Bytes').AsInteger := bytes;
-        ParamByName('MD5').AsString := MD5;
-        ParamByName('CreationTime').AsDateTime := CreationTime;
-        ParamByName('LastWriteTime').AsDateTime := LastWriteTime;
-        ParamByName('LastAccessTime').AsDateTime := LastAccessTime;
-        ExecSQL;
-        Close;
-        Open('Select * from Files');
-      end;
-    end
-    else
-    begin
-      MessageBoxA(0, '文件 MD5 数据库中已存在！', '提示', MB_OKCANCEL);
-    end;
+    InsertInto(FDQuery_1, FileName, path, size, bytes, MD5, CreationTime,LastWriteTime, LastAccessTime);
   end;
 
   FDQuery_1.Open('Select * from Files');
@@ -213,9 +184,10 @@ end;
 
 procedure TuMainForm.MenuItem_DelAllClick(Sender: TObject);
 var
-  flag : Integer;
+  flag: Integer;
 begin
-  flag := MessageBox(0, '确认删除？' + #10#13 + '一旦删除，数据将无法恢复！！！', '警告', MB_OKCANCEL);
+  flag := MessageBox(0, '确认删除？' + #10#13 + '一旦删除，数据将无法恢复！！！', '警告',
+    MB_OKCANCEL);
   if flag = 1 then
   begin
     FDQuery_1.Close;
@@ -248,16 +220,17 @@ end;
 
 procedure TuMainForm.MenuItem_OpenDirClick(Sender: TObject);
 var
-  dir : string;
+  dir: string;
 begin
   dir := FDQuery_1.FieldByName('Path').AsString;
   if FDQuery_1.State in [dsBrowse] then
-    ShellExecute(Handle, 'open', 'Explorer.exe', PWideChar(ExtractFilePath(dir)), nil, 1);
+    ShellExecute(Handle, 'open', 'Explorer.exe', PWideChar(ExtractFilePath(dir)
+      ), nil, 1);
 end;
 
 procedure TuMainForm.MenuItem_OpenFileClick(Sender: TObject);
 var
-  dir : string;
+  dir: string;
 begin
   dir := FDQuery_1.FieldByName('Path').AsString;
   if FDQuery_1.State in [dsBrowse] then
@@ -288,45 +261,55 @@ begin
     MD5 := GetFileHashMD5(path);
     bytes := FileSizeByName(path);
     size := TransBytesToSize(bytes);
-
-    with FDQuery_1 do
-    begin
-      Close;
-      SQL.Clear;
-      SQL.Add('Select * from Files where MD5="' + MD5 + '"');
-      Open;
-    end;
-
-    { 查询结果为空，则将信息插入数据库中，不为空，弹出提示信息 }
-    if FDQuery_1.IsEmpty then // FDQuery_1.RecordCount = 0
-    begin
-      with FDQuery_1 do
-      begin
-        Close;
-        SQL.Clear;
-        SQL.Add(strInsert);
-        ParamByName('Name').AsString := FileName;
-        ParamByName('Path').AsString := path;
-        ParamByName('Size').AsString := size;
-        ParamByName('Bytes').AsInteger := bytes;
-        ParamByName('MD5').AsString := MD5;
-        ParamByName('CreationTime').AsDateTime := CreationTime;
-        ParamByName('LastWriteTime').AsDateTime := LastWriteTime;
-        ParamByName('LastAccessTime').AsDateTime := LastAccessTime;
-        ExecSQL;
-        Close;
-        Open('Select * from Files');
-      end;
-    end
-    else
-    begin
-      MessageBoxA(0, '文件 MD5 数据库中已存在！', '提示', MB_OKCANCEL);
-    end;
+    InsertInto(FDQuery_1, FileName, path, size, bytes, MD5, CreationTime,LastWriteTime, LastAccessTime);
   end;
   FDQuery_1.Open('Select * from Files');
   FDQuery_1.Connection := FDConnection_1;
   DataSource_1.DataSet := FDQuery_1;
   DBGrid_Data.DataSource := DataSource_1;
+end;
+
+procedure InsertInto(FQuery: TFDQuery; FileName: string; path: string;
+  size: string; bytes: Integer; MD5: string; CreationTime: TDateTime;
+  LastWriteTime: TDateTime; LastAccessTime: TDateTime);
+const
+  strInsert =
+    'INSERT INTO Files(Name, Path, Size, Bytes, MD5, CreationTime, LastWriteTime, LastAccessTime)'
+    + ' VALUES(:Name, :Path, :Size, :Bytes, :MD5, :CreationTime, :LastWriteTime, :LastAccessTime)';
+begin
+  with FQuery do
+  begin
+    Close;
+    SQL.Clear;
+    SQL.Add('Select * from Files where MD5="' + MD5 + '"');
+    Open;
+  end;
+
+  { 查询结果为空，则将信息插入数据库中，不为空，弹出提示信息 }
+  if FQuery.IsEmpty then // FDQuery_1.RecordCount = 0
+  begin
+    with FQuery do
+    begin
+      Close;
+      SQL.Clear;
+      SQL.Add(strInsert);
+      ParamByName('Name').AsString := FileName;
+      ParamByName('Path').AsString := path;
+      ParamByName('Size').AsString := size;
+      ParamByName('Bytes').AsInteger := bytes;
+      ParamByName('MD5').AsString := MD5;
+      ParamByName('CreationTime').AsDateTime := CreationTime;
+      ParamByName('LastWriteTime').AsDateTime := LastWriteTime;
+      ParamByName('LastAccessTime').AsDateTime := LastAccessTime;
+      ExecSQL;
+      Close;
+      Open('Select * from Files');
+    end;
+  end
+  else
+  begin
+    MessageBoxA(0, '文件 MD5 数据库中已存在！', '提示', MB_OKCANCEL);
+  end;
 end;
 
 end.
