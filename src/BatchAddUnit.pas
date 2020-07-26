@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
-  System.Classes, Vcl.Graphics,Vcl.FileCtrl,
+  System.Classes, Vcl.Graphics, Vcl.FileCtrl,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls;
 
 type
@@ -39,7 +39,7 @@ procedure TBatchAddForm.Button1Click(Sender: TObject);
 var
   astrPath: tarray<string>;
 begin
-  if SelectDirectory('请选择路径', astrPath,  [sdNoDereferenceLinks]) then
+  if SelectDirectory('请选择路径', astrPath, [sdNoDereferenceLinks]) then
   begin
     Edit_Path.Text := astrPath[0];
   end;
@@ -61,11 +61,11 @@ begin
   filelist := UtilUnit.EnumAllFiles(path, temp, True);
   Label_Total.Caption := IntToStr(filelist.Count);
   ProgressBar1.Max := filelist.Count;
-  for I := 0 to filelist.Count - 1 do
+  for i := 0 to filelist.Count - 1 do
   begin
     UtilUnit.InsertFileInfo(uMainForm.FDQuery_1, filelist[i]);
-    Label_Done.Caption := IntToStr(I + 1);
-    ProgressBar1.Position := I + 1;
+    Label_Done.Caption := IntToStr(i + 1);
+    ProgressBar1.Position := i + 1;
   end;
 end;
 
