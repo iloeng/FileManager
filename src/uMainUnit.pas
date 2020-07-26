@@ -90,7 +90,6 @@ var
 begin
   // 获取文件总数
   FilesCount := DragQueryFile(Msg.WParam, $FFFFFFFF, nil, 0);
-  // Memo1.Lines.Add('文件总数为：' + IntToStr(FilesCount));
 
   // 获取文件名
   for i := 0 to FilesCount - 1 do
