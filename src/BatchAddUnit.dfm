@@ -14,7 +14,7 @@ object BatchAddForm: TBatchAddForm
   PixelsPerInch = 96
   TextHeight = 13
   object Label_Done: TLabel
-    Left = 193
+    Left = 190
     Top = 111
     Width = 6
     Height = 13
@@ -42,27 +42,37 @@ object BatchAddForm: TBatchAddForm
     Caption = #36873#25321#36335#24452
     TabOrder = 0
     object Label_Path: TLabel
-      Left = 16
+      Left = 8
       Top = 24
       Width = 34
       Height = 13
       Caption = #36335#24452' : '
     end
     object Edit_Path: TEdit
-      Left = 56
+      Left = 41
       Top = 21
       Width = 257
       Height = 21
       TabOrder = 0
     end
     object Button_Ensure: TButton
-      Left = 319
+      Left = 335
       Top = 19
       Width = 75
       Height = 25
       Caption = #30830#35748
       TabOrder = 1
       OnClick = Button_EnsureClick
+    end
+    object Button1: TButton
+      Left = 304
+      Top = 19
+      Width = 25
+      Height = 25
+      ImageIndex = 2
+      Images = uMainForm.ImageList_1
+      TabOrder = 2
+      OnClick = Button1Click
     end
   end
   object ProgressBar1: TProgressBar

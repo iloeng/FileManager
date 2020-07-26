@@ -52,6 +52,7 @@ type
     procedure MenuItem_DelAllClick(Sender: TObject);
     procedure MenuItem_OpenFileClick(Sender: TObject);
     procedure MenuItem_OpenDirClick(Sender: TObject);
+    procedure ToolButton_BatchNewClick(Sender: TObject);
   private
     procedure GetText(Sender: TField; var Text: String; DisplayText: Boolean);
     { Private declarations }
@@ -64,7 +65,7 @@ var
 
 implementation
 
-uses AboutUnit, UtilUnit;
+uses AboutUnit, UtilUnit, BatchAddUnit;
 
 {$R *.dfm}
 
@@ -212,6 +213,11 @@ begin
   dir := FDQuery_1.FieldByName('Path').AsString;
   if FDQuery_1.State in [dsBrowse] then
     ShellExecute(Handle, 'open', 'Explorer.exe', PWideChar(dir), nil, 1);
+end;
+
+procedure TuMainForm.ToolButton_BatchNewClick(Sender: TObject);
+begin
+  BatchAddForm.Show;
 end;
 
 procedure TuMainForm.ToolButton_NewClick(Sender: TObject);
