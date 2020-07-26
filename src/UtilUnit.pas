@@ -275,6 +275,7 @@ begin
   begin
     MessageBox(0, PWideChar(FileName + #10#13 + '文件 MD5 数据库中已存在！'), '提示',
       MB_OKCANCEL);
+    FQuery.Open('Select * from Files');
   end;
 end;
 
