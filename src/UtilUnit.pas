@@ -9,7 +9,7 @@ uses
 
 Function RoundingUserDefineDecaimalPart(FloatNum: Double;
   NoOfDecPart: integer): Double;
-Function TransBytesToSize(Bytes: integer): String;
+Function TransBytesToSize(Bytes: Int64): String;
 Function TransFloatToStr(Avalue: Double; ADigits: integer): String;
 Function EnumAllFiles(strPath: string; FileList: TStringList;
   CheckSub: Boolean = False): TStringList;
@@ -20,7 +20,7 @@ procedure InsertFileInfo(FQuery: TFDQuery; FilePath: string);
 
 implementation
 
-function TransBytesToSize(Bytes: integer): String;
+function TransBytesToSize(Bytes: Int64): String;
 var
   // temp : Double;
   temp: String;
@@ -227,7 +227,7 @@ var
   CreationTime, LastWriteTime, LastAccessTime: TDateTime;
   FileName: string;
   MD5: string;
-  Bytes: integer;
+  Bytes: Int64;
   size: string;
 const
   strInsert =
@@ -261,7 +261,7 @@ begin
       ParamByName('Name').AsString := FileName;
       ParamByName('Path').AsString := path;
       ParamByName('Size').AsString := size;
-      ParamByName('Bytes').AsInteger := Bytes;
+      ParamByName('Bytes').AsString := IntToStr(Bytes);
       ParamByName('MD5').AsString := MD5;
       ParamByName('CreationTime').AsDateTime := CreationTime;
       ParamByName('LastWriteTime').AsDateTime := LastWriteTime;
